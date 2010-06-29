@@ -6,15 +6,11 @@ var sys = require('sys'),
 	url = require('url'),
 	fs = require('fs');
 
-		//templating
-		var searchResHamlTemplate;
-		fs.readFile('./search-res.haml', function(e, c) {
-				searchResHamlTemplate = c.toString();
-			});
-
-		var sla = parseInt(process.argv[2]);
-		var sla = isNaN(sla) ? 2000 : sla;	//2s or the first argument in the command line
-		sys.puts('Sla is: ' + sla);
+    //templating
+    var searchResHamlTemplate;
+    fs.readFile('./search-res.haml', function(e, c) {
+        searchResHamlTemplate = c.toString();
+      });
 
 http.createServer(function (req, res) {
 		process.addListener('uncaughtException', function (err) {
@@ -29,13 +25,10 @@ http.createServer(function (req, res) {
 		var urlParsed = url.parse(req.url, true);
 		var path = urlParsed.pathname;
 
-		var partialResults = [];
-	  var timeoutReached = false;
-
 		switch(path) {
 			case '/':
 				res.writeHead(200, {'Content-Type': 'text/plain'});
-				res.end('Hello World\n');
+				res.end('Let\'s aggregate!');
 				break;
 			case '/aggregate':
 				//extract search predicate
@@ -47,46 +40,34 @@ http.createServer(function (req, res) {
 					res.end('Query expected. Use q=... in the URL');
 					return;
 				}
-
-				async.parallel(buildParallelFuncArrayWithSla());
+				async.parallel(buildParallelFuncArray(),
+					function (err, results) {
+						res.writeHead(200, {'Content-Type': 'text/html'});
+						var searchItems = [];
+						for(i=0;i<results.length;i++) {
+							for(sr in results[i]) {
+								searchItems.push(results[i][sr]);
+							}
+						}
+						res.end(haml.render(searchResHamlTemplate, {locals: {items: searchItems}}));
+					}
+				);
 			break;
 			default:
 				res.writeHead(404);
 				res.end('Not Found!');
 		}
 
-		function buildParallelFuncArrayWithSla() {
-			var funz = [];
+		function buildParallelFuncArray() {
+			var getResourceFunc = [];
 			for(var sn in serviceUrls) {
-				funz.push(function(serviceName) {
+				getResourceFunc.push(function(serviceName) {
 					return function(callback) {
 	          callRestService(serviceUrls[serviceName] + predicate, serviceName, callback);
         	};
 				}(sn));
 			}
-      //will invoke callback after timeout
-			funz.push(function(callback) {
-				setTimeout(function() {
-					if(!timeoutReached) {
-						//serve search results if any
-						serveContent(partialResults);
-						sys.puts("Timeout reached");
-					}
-				}, sla);
-			});
-			return funz;
-		}
-
-		function serveContent(results) {
-			res.writeHead(200, {'Content-Type': 'text/html'});
-			var searchItems = [];
-			for(i=0;i<results.length;i++) {
-				for(sr in results[i]) {
-					searchItems.push(results[i][sr]);
-				}
-			}
-			res.end(haml.render(searchResHamlTemplate, {locals: {items: searchItems}}));
-			timeoutReached = true;	//prevent further search results to be processed
+			return getResourceFunc;
 		}
 
 		function callRestService(url, serviceName, callback) {
@@ -111,12 +92,7 @@ http.createServer(function (req, res) {
 								searchResults.push(searchResult);
 							}
 					 }
-
-					 partialResults.push(searchResults);
-					 if(partialResults.length ==  2 && !timeoutReached) {
-				     sys.puts("Timeout not reached");
-						 serveContent(partialResults);
-					 }
+					 callback(null, searchResults);
 				});
 				request.addListener('error', function(data) {
 					sys.puts('Error fetching [' + url + ']. Body:\n' + data);
