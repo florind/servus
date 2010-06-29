@@ -1,0 +1,8 @@
+%h1 Search results
+  :if items.length === 0
+    %p There are no search results
+  :if items.length > 0
+    %table
+      :each sr in items
+        %tr
+          %td %a{href: sr.url}&= sr.text
