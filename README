@@ -10,7 +10,7 @@ git clone http://github.com/danwrong/restler.git
 git clone http://github.com/creationix/haml-js.git
 
 Run servus:
-node servus <sla>
+node servus.js <sla>
 
 where <sla> is the service level timeout that forces a client request to return with partial results after the timeout. If no sla is specified the default is 2 sec.
 
