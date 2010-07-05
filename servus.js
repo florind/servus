@@ -90,7 +90,6 @@ http.createServer(function (req, res) {
 		}
 
 		function callRestService(url, serviceName, callback) {
-				sys.puts(serviceName);
 		    request = rest.get(url);
 				request.addListener('success', function(data) {
 						searchResults = [];
