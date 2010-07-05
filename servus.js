@@ -41,7 +41,7 @@ http.createServer(function (req, res) {
 				//extract search predicate
 				var query = urlParsed.query;
 				if(query != undefined) {
-					predicate = query.q;
+					predicate = query.q.replace(' ', '+');
 				} else {
 					res.writeHead(400); 
 					res.end('Query expected. Use q=... in the URL');
