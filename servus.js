@@ -1,10 +1,10 @@
 var sys = require('sys'),
-http = require('http'),
-rest = require('./restler/lib/restler'),
-async = require('./async/lib/async'),
-haml = require('./haml-js/lib/haml');
-url = require('url'),
-fs = require('fs');
+  http = require('http'),
+  rest = require('./restler/lib/restler'),
+  async = require('./async/lib/async'),
+  haml = require('./haml-js/lib/haml');
+  url = require('url'),
+  fs = require('fs');
 
 // templating
 var searchResHamlTemplate;
