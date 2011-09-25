@@ -1,0 +1,12 @@
+{
+  "name": "servus.js",
+  "version": "0.0.1",
+  "dependencies": {
+    "restler": "0.2.1",
+    "async": "0.1.10",
+    "haml": "0.2.5"
+  },
+  "engines": {
+    "node": ">= 0.4.0"
+  }
+}

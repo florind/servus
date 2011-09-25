@@ -1,8 +1,7 @@
-var sys = require('sys'),
-  http = require('http'),
-  rest = require('./restler/lib/restler'),
-  async = require('./async/lib/async'),
-  haml = require('./haml-js/lib/haml');
+var http = require('http'),
+  rest = require('restler'),
+  async = require('async'),
+  haml = require('haml');
   url = require('url'),
   fs = require('fs');
 
@@ -14,11 +13,11 @@ fs.readFile('./search-res.haml', function(e, c) {
 
 var sla = parseInt(process.argv[2]);
 var sla = isNaN(sla) ? 2000 : sla; // 2s or the first argument in the command line
-sys.puts('Sla is: ' + sla);
+console.log('Sla is: ' + sla);
 
 http.createServer(function (req, res) {
   process.addListener('uncaughtException', function (err) {
-    sys.puts('Caught exception: ' + err);
+    console.log('Caught exception: ' + err);
     res.writeHead(500, 'text/plain');
     res.end('error!');
   });
@@ -69,7 +68,7 @@ http.createServer(function (req, res) {
         if(!timeoutReached) {
           //serve search results if any
           serveContent(partialResults);
-          sys.puts("Timeout reached");
+          console.log("Timeout reached");
         }
       }, sla);
     });
@@ -112,16 +111,16 @@ http.createServer(function (req, res) {
       }
       partialResults.push(searchResults);
       if (partialResults.length == 2 && !timeoutReached) {
-        sys.puts("Timeout not reached");
+        console.log("Timeout not reached");
         serveContent(partialResults);
       }
     });
 
     request.addListener('error', function(data) {
-      sys.puts('Error fetching [' + url + ']. Body:\n' + data);
+      console.log('Error fetching [' + url + ']. Body:\n' + data);
       callback(null, ' ');
     });
   }
 
 }).listen(8124, "127.0.0.1");
-sys.puts('Server running at http://127.0.0.1:8124/');
+console.log('Server running at http://127.0.0.1:8124/');
